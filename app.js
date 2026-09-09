@@ -53,11 +53,27 @@ map.on("click", "township-nodes", (event) => {
         (item) => item.name === name
     );
 
-    const lastUpdated =
-        township?.lastUpdated ||
-        "Initial status";
+   const lastUpdated =
+    township?.lastUpdated ||
+    "Initial status";
 
-    const popupContent = `
+const reasonSection =
+    status === "OFF"
+        ? `
+            <div class="popup-reason">
+                <div class="popup-reason-label">
+                    REASON
+                </div>
+
+                <div class="popup-reason-text">
+                    ${township?.reason || "Reason not provided"}
+                </div>
+            </div>
+        `
+        : "";
+
+const popupContent = `
+
         <div class="gridwatch-popup">
 
             <div class="popup-township">
@@ -73,10 +89,12 @@ map.on("click", "township-nodes", (event) => {
                 <span>${statusText}</span>
             </div>
 
-            <div class="popup-updated">
-                LAST UPDATED
-                <strong>${lastUpdated}</strong>
-            </div>
+            ${reasonSection}
+
+<div class="popup-updated">
+    LAST UPDATED
+    <strong>${lastUpdated}</strong>
+</div>
 
         </div>
     `;
