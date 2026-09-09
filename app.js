@@ -29,6 +29,78 @@ map.addControl(
 map.on("load", () => {
 
     // --------------------------------
+// TOWNSHIP INTERACTION
+// --------------------------------
+
+map.on("click", "township-nodes", (event) => {
+
+    const feature = event.features[0];
+
+    const name = feature.properties.name;
+    const status = feature.properties.status;
+
+    const statusText =
+        status === "ON"
+            ? "POWER ON"
+            : "POWER OFF";
+
+    const statusColor =
+        status === "ON"
+            ? "#FFFFFF"
+            : "#212121";
+
+    const township = townships.find(
+        (item) => item.name === name
+    );
+
+    const lastUpdated =
+        township?.lastUpdated ||
+        "Initial status";
+
+    const popupContent = `
+        <div class="gridwatch-popup">
+
+            <div class="popup-township">
+                ${name}
+            </div>
+
+            <div class="popup-status">
+                <span
+                    class="popup-status-dot"
+                    style="background: ${statusColor};"
+                ></span>
+
+                <span>${statusText}</span>
+            </div>
+
+            <div class="popup-updated">
+                LAST UPDATED
+                <strong>${lastUpdated}</strong>
+            </div>
+
+        </div>
+    `;
+
+    new maplibregl.Popup({
+        closeButton: true,
+        closeOnClick: true,
+        maxWidth: "280px"
+    })
+        .setLngLat(event.lngLat)
+        .setHTML(popupContent)
+        .addTo(map);
+});
+
+// Change cursor when hovering over a township
+map.on("mouseenter", "township-nodes", () => {
+    map.getCanvas().style.cursor = "pointer";
+});
+
+map.on("mouseleave", "township-nodes", () => {
+    map.getCanvas().style.cursor = "";
+});
+
+    // --------------------------------
     // HIDE BASEMAP
     // --------------------------------
 

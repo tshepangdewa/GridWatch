@@ -66,3 +66,104 @@ body {
 
     opacity: 0.55;
 }
+
+/* --------------------------------
+   GRIDWATCH TOWNSHIP POPUP
+-------------------------------- */
+
+.maplibregl-popup-content {
+    background: #050505;
+    color: #ffffff;
+
+    border: 1px solid #333333;
+
+    border-radius: 4px;
+
+    padding: 0;
+
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+
+.maplibregl-popup-tip {
+    border-top-color: #050505;
+}
+
+.maplibregl-popup-close-button {
+    color: #ffffff;
+
+    font-size: 18px;
+
+    padding: 5px 8px;
+}
+
+.gridwatch-popup {
+    min-width: 190px;
+
+    padding: 16px;
+}
+
+.popup-township {
+    font-size: 14px;
+
+    font-weight: 600;
+
+    letter-spacing: 0.08em;
+
+    text-transform: uppercase;
+
+    margin-bottom: 14px;
+}
+
+.popup-status {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    letter-spacing: 0.08em;
+}
+
+.popup-status-dot {
+    width: 8px;
+
+    height: 8px;
+
+    border-radius: 50%;
+
+    display: inline-block;
+
+    border: 1px solid #ffffff;
+}
+
+.popup-updated {
+    margin-top: 14px;
+
+    padding-top: 10px;
+
+    border-top: 1px solid #222222;
+
+    color: #777777;
+
+    font-size: 8px;
+
+    letter-spacing: 0.12em;
+}
+
+.popup-updated strong {
+    display: block;
+
+    margin-top: 4px;
+
+    color: #aaaaaa;
+
+    font-size: 10px;
+
+    letter-spacing: 0.04em;
+
+    font-weight: 400;
+}
