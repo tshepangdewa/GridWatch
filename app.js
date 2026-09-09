@@ -28,20 +28,20 @@ map.addControl(
 
 map.on("load", () => {
 
+    // --------------------------------
+    // HIDE BASEMAP
+    // --------------------------------
+
     const baseLayers = map.getStyle().layers;
 
     for (const layer of baseLayers) {
-        if (layer.type === "symbol") {
-            map.setLayoutProperty(
-                layer.id,
-                "visibility",
-                "none"
-            );
-        }
-    }
 
-    console.log("GridWatch map loaded.");
-    console.log(`${townships.length} townships loaded.`);
+        map.setLayoutProperty(
+            layer.id,
+            "visibility",
+            "none"
+        );
+    }
 
     // --------------------------------
     // BULAWAYO BOUNDARY
@@ -52,6 +52,7 @@ map.on("load", () => {
         data: BULAWAYO_BOUNDARY_URL
     });
 
+    // Black area inside the Bulawayo boundary
     map.addLayer({
         id: "bulawayo-boundary-fill",
 
@@ -60,11 +61,12 @@ map.on("load", () => {
         source: "bulawayo-boundary",
 
         paint: {
-            "fill-color": "#07111f",
-            "fill-opacity": 0.18
+            "fill-color": "#000000",
+            "fill-opacity": 1
         }
     });
 
+    // Electric-white Bulawayo outline
     map.addLayer({
         id: "bulawayo-boundary-line",
 
@@ -73,14 +75,14 @@ map.on("load", () => {
         source: "bulawayo-boundary",
 
         paint: {
-            "line-color": "#ffffff",
-            "line-width": 1.2,
-            "line-opacity": 0.35
+            "line-color": "#FFFFFF",
+            "line-width": 2,
+            "line-opacity": 1
         }
     });
 
     // --------------------------------
-    // TOWNSHIP LOCATIONS
+    // TOWNSHIP DATA
     // --------------------------------
 
     const townshipFeatures = townships.map((township) => ({
@@ -88,7 +90,7 @@ map.on("load", () => {
 
         properties: {
             name: township.name,
-                status: township.status
+            status: township.status
         },
 
         geometry: {
@@ -112,53 +114,59 @@ map.on("load", () => {
         data: townshipGeoJSON
     });
 
-   // --------------------------------
-// GRIDWATCH ELECTRICAL NODES
-// --------------------------------
+    // --------------------------------
+    // ELECTRICAL INDICATORS
+    // --------------------------------
 
-map.addLayer({
-    id: "township-nodes",
+    map.addLayer({
+        id: "township-nodes",
 
-    type: "circle",
+        type: "circle",
 
-    source: "townships",
+        source: "townships",
 
-    paint: {
-        // ON = white LED
-        // OFF = dark subdued node
-        "circle-color": [
-            "match",
-            ["get", "status"],
-            "ON",
-            "#ffffff",
-            "OFF",
-            "#18202b",
-            "#18202b"
-        ],
+        paint: {
 
-        // Every node stays the same physical size.
-        "circle-radius": 4,
+            "circle-color": [
+                "match",
+                ["get", "status"],
 
-        // State is communicated by color, not intensity.
-        "circle-opacity": 1,
+                "ON",
+                "#FFFFFF",
 
-        "circle-stroke-width": 1,
+                "OFF",
+                "#212121",
 
-        "circle-stroke-color": [
-            "match",
-            ["get", "status"],
-            "ON",
-            "#ffffff",
-            "OFF",
-            "#394454",
-            "#394454"
-        ],
+                "#212121"
+            ],
 
-        "circle-stroke-opacity": 0.9
-    }
-});
+            "circle-radius": 4,
 
-    // Township names
+            "circle-opacity": 1,
+
+            "circle-stroke-width": 1,
+
+            "circle-stroke-color": [
+                "match",
+                ["get", "status"],
+
+                "ON",
+                "#FFFFFF",
+
+                "OFF",
+                "#212121",
+
+                "#212121"
+            ],
+
+            "circle-stroke-opacity": 1
+        }
+    });
+
+    // --------------------------------
+    // TOWNSHIP NAMES
+    // --------------------------------
+
     map.addLayer({
         id: "township-labels",
 
@@ -167,26 +175,34 @@ map.addLayer({
         source: "townships",
 
         layout: {
-            "text-field": ["get", "name"],
+
+            "text-field": [
+                "get",
+                "name"
+            ],
 
             "text-size": 10,
 
-            "text-offset": [0, 1.2],
+            "text-offset": [
+                0,
+                1.2
+            ],
 
             "text-anchor": "top"
         },
 
         paint: {
-            "text-color": "#ffffff",
 
-            "text-halo-color": "#03060b",
+            "text-color": "#FFFFFF",
+
+            "text-halo-color": "#000000",
 
             "text-halo-width": 1.5,
 
-            "text-opacity": 0.85
+            "text-opacity": 1
         }
     });
 
-    console.log("Bulawayo boundary loaded.");
-    console.log("Township locations displayed.");
+    console.log("GridWatch map loaded.");
+    console.log(`${townships.length} townships loaded.`);
 });
