@@ -203,7 +203,6 @@ map.on("mouseleave", "township-nodes", () => {
         type: "geojson",
         data: townshipGeoJSON
     });
-
     // --------------------------------
     // ELECTRICAL INDICATORS
     // --------------------------------
