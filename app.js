@@ -7,6 +7,48 @@ const BULAWAYO_CENTER = [28.58, -20.15];
 const BULAWAYO_BOUNDARY_URL =
     "https://services.arcgis.com/7vyJMxlH6ODgjFtB/ArcGIS/rest/services/MapStudyArea2/FeatureServer/5/query?where=1%3D1&outFields=*&f=geojson";
 
+const STORAGE_KEY = "gridwatch-townships";
+
+
+// --------------------------------
+// LOAD SAVED TOWNSHIP DATA
+// --------------------------------
+
+function loadTownships() {
+
+    const savedTownships =
+        JSON.parse(
+            localStorage.getItem(STORAGE_KEY)
+        );
+
+    if (!savedTownships) {
+        return townships.map((township) => ({
+            ...township
+        }));
+    }
+
+    return townships.map((township) => {
+
+        const saved =
+            savedTownships.find(
+                (item) => item.name === township.name
+            );
+
+        return saved
+            ? {
+                ...township,
+                ...saved
+            }
+            : {
+                ...township
+            };
+    });
+}
+
+
+let currentTownships = loadTownships();
+
+
 const map = new maplibregl.Map({
     container: "map",
 
@@ -21,108 +63,139 @@ const map = new maplibregl.Map({
     maxZoom: 16
 });
 
+
 map.addControl(
     new maplibregl.NavigationControl(),
     "top-right"
 );
 
+
 map.on("load", () => {
 
     // --------------------------------
-// TOWNSHIP INTERACTION
-// --------------------------------
+    // TOWNSHIP INTERACTION
+    // --------------------------------
 
-map.on("click", "township-nodes", (event) => {
+    map.on("click", "township-nodes", (event) => {
 
-    const feature = event.features[0];
+        const feature = event.features[0];
 
-    const name = feature.properties.name;
-    const status = feature.properties.status;
+        const name =
+            feature.properties.name;
 
-    const statusText =
-        status === "ON"
-            ? "POWER ON"
-            : "POWER OFF";
+        const status =
+            feature.properties.status;
 
-    const statusColor =
-        status === "ON"
-            ? "#FFFFFF"
-            : "#212121";
+        const statusText =
+            status === "ON"
+                ? "POWER ON"
+                : "POWER OFF";
 
-    const township = townships.find(
-        (item) => item.name === name
+        const statusColor =
+            status === "ON"
+                ? "#FFFFFF"
+                : "#212121";
+
+        const township =
+            currentTownships.find(
+                (item) => item.name === name
+            );
+
+        const lastUpdated =
+            township?.lastUpdated ||
+            "Initial status";
+
+        const reasonSection =
+            status === "OFF"
+                ? `
+                    <div class="popup-reason">
+
+                        <div class="popup-reason-label">
+                            REASON
+                        </div>
+
+                        <div class="popup-reason-text">
+                            ${township?.reason || "Reason not provided"}
+                        </div>
+
+                    </div>
+                `
+                : "";
+
+        const popupContent = `
+
+            <div class="gridwatch-popup">
+
+                <div class="popup-township">
+                    ${name}
+                </div>
+
+                <div class="popup-status">
+
+                    <span
+                        class="popup-status-dot"
+                        style="background: ${statusColor};"
+                    ></span>
+
+                    <span>
+                        ${statusText}
+                    </span>
+
+                </div>
+
+                ${reasonSection}
+
+                <div class="popup-updated">
+
+                    LAST UPDATED
+
+                    <strong>
+                        ${lastUpdated}
+                    </strong>
+
+                </div>
+
+            </div>
+        `;
+
+        new maplibregl.Popup({
+            closeButton: true,
+            closeOnClick: true,
+            maxWidth: "280px"
+        })
+            .setLngLat(event.lngLat)
+            .setHTML(popupContent)
+            .addTo(map);
+    });
+
+
+    // --------------------------------
+    // TOWNSHIP CURSOR
+    // --------------------------------
+
+    map.on(
+        "mouseenter",
+        "township-nodes",
+        () => {
+            map.getCanvas().style.cursor = "pointer";
+        }
     );
 
-   const lastUpdated =
-    township?.lastUpdated ||
-    "Initial status";
+    map.on(
+        "mouseleave",
+        "township-nodes",
+        () => {
+            map.getCanvas().style.cursor = "";
+        }
+    );
 
-const reasonSection =
-    status === "OFF"
-        ? `
-            <div class="popup-reason">
-                <div class="popup-reason-label">
-                    REASON
-                </div>
-
-                <div class="popup-reason-text">
-                    ${township?.reason || "Reason not provided"}
-                </div>
-            </div>
-        `
-        : "";
-
-const popupContent = `
-
-        <div class="gridwatch-popup">
-
-            <div class="popup-township">
-                ${name}
-            </div>
-
-            <div class="popup-status">
-                <span
-                    class="popup-status-dot"
-                    style="background: ${statusColor};"
-                ></span>
-
-                <span>${statusText}</span>
-            </div>
-
-            ${reasonSection}
-
-<div class="popup-updated">
-    LAST UPDATED
-    <strong>${lastUpdated}</strong>
-</div>
-
-        </div>
-    `;
-
-    new maplibregl.Popup({
-        closeButton: true,
-        closeOnClick: true,
-        maxWidth: "280px"
-    })
-        .setLngLat(event.lngLat)
-        .setHTML(popupContent)
-        .addTo(map);
-});
-
-// Change cursor when hovering over a township
-map.on("mouseenter", "township-nodes", () => {
-    map.getCanvas().style.cursor = "pointer";
-});
-
-map.on("mouseleave", "township-nodes", () => {
-    map.getCanvas().style.cursor = "";
-});
 
     // --------------------------------
     // HIDE BASEMAP
     // --------------------------------
 
-    const baseLayers = map.getStyle().layers;
+    const baseLayers =
+        map.getStyle().layers;
 
     for (const layer of baseLayers) {
 
@@ -133,17 +206,23 @@ map.on("mouseleave", "township-nodes", () => {
         );
     }
 
+
     // --------------------------------
     // BULAWAYO BOUNDARY
     // --------------------------------
 
-    map.addSource("bulawayo-boundary", {
-        type: "geojson",
-        data: BULAWAYO_BOUNDARY_URL
-    });
+    map.addSource(
+        "bulawayo-boundary",
+        {
+            type: "geojson",
+            data: BULAWAYO_BOUNDARY_URL
+        }
+    );
 
-    // Black area inside the Bulawayo boundary
+
+    // Black area inside boundary
     map.addLayer({
+
         id: "bulawayo-boundary-fill",
 
         type: "fill",
@@ -151,13 +230,19 @@ map.on("mouseleave", "township-nodes", () => {
         source: "bulawayo-boundary",
 
         paint: {
+
             "fill-color": "#000000",
+
             "fill-opacity": 1
+
         }
+
     });
 
-    // Electric-white Bulawayo outline
+
+    // Electric-white boundary
     map.addLayer({
+
         id: "bulawayo-boundary-line",
 
         type: "line",
@@ -165,49 +250,79 @@ map.on("mouseleave", "township-nodes", () => {
         source: "bulawayo-boundary",
 
         paint: {
+
             "line-color": "#FFFFFF",
+
             "line-width": 2,
+
             "line-opacity": 1
+
         }
+
     });
+
 
     // --------------------------------
     // TOWNSHIP DATA
     // --------------------------------
 
-    const townshipFeatures = townships.map((township) => ({
-        type: "Feature",
+    const townshipFeatures =
+        currentTownships.map(
+            (township) => ({
 
-        properties: {
-            name: township.name,
-            status: township.status
-        },
+                type: "Feature",
 
-        geometry: {
-            type: "Point",
+                properties: {
 
-            coordinates: [
-                township.longitude,
-                township.latitude
-            ]
-        }
-    }));
+                    name: township.name,
+
+                    status: township.status
+
+                },
+
+                geometry: {
+
+                    type: "Point",
+
+                    coordinates: [
+
+                        township.longitude,
+
+                        township.latitude
+
+                    ]
+
+                }
+
+            })
+        );
+
 
     const townshipGeoJSON = {
+
         type: "FeatureCollection",
 
         features: townshipFeatures
+
     };
 
-    map.addSource("townships", {
-        type: "geojson",
-        data: townshipGeoJSON
-    });
+
+    map.addSource(
+        "townships",
+        {
+            type: "geojson",
+
+            data: townshipGeoJSON
+        }
+    );
+
+
     // --------------------------------
     // ELECTRICAL INDICATORS
     // --------------------------------
 
     map.addLayer({
+
         id: "township-nodes",
 
         type: "circle",
@@ -217,7 +332,9 @@ map.on("mouseleave", "township-nodes", () => {
         paint: {
 
             "circle-color": [
+
                 "match",
+
                 ["get", "status"],
 
                 "ON",
@@ -227,6 +344,7 @@ map.on("mouseleave", "township-nodes", () => {
                 "#212121",
 
                 "#212121"
+
             ],
 
             "circle-radius": 4,
@@ -236,7 +354,9 @@ map.on("mouseleave", "township-nodes", () => {
             "circle-stroke-width": 1,
 
             "circle-stroke-color": [
+
                 "match",
+
                 ["get", "status"],
 
                 "ON",
@@ -246,17 +366,22 @@ map.on("mouseleave", "township-nodes", () => {
                 "#212121",
 
                 "#212121"
+
             ],
 
             "circle-stroke-opacity": 1
+
         }
+
     });
+
 
     // --------------------------------
     // TOWNSHIP NAMES
     // --------------------------------
 
     map.addLayer({
+
         id: "township-labels",
 
         type: "symbol",
@@ -278,6 +403,7 @@ map.on("mouseleave", "township-nodes", () => {
             ],
 
             "text-anchor": "top"
+
         },
 
         paint: {
@@ -289,9 +415,94 @@ map.on("mouseleave", "township-nodes", () => {
             "text-halo-width": 1.5,
 
             "text-opacity": 1
+
         }
+
     });
 
-    console.log("GridWatch map loaded.");
-    console.log(`${townships.length} townships loaded.`);
+
+    console.log(
+        "GridWatch map loaded."
+    );
+
+    console.log(
+        `${currentTownships.length} townships loaded.`
+    );
+
 });
+
+
+// --------------------------------
+// LIVE STATUS SYNC
+// --------------------------------
+
+window.addEventListener(
+    "storage",
+    (event) => {
+
+        if (
+            event.key !== STORAGE_KEY
+        ) {
+            return;
+        }
+
+        currentTownships =
+            loadTownships();
+
+
+        const source =
+            map.getSource("townships");
+
+
+        if (!source) {
+            return;
+        }
+
+
+        const townshipFeatures =
+            currentTownships.map(
+                (township) => ({
+
+                    type: "Feature",
+
+                    properties: {
+
+                        name: township.name,
+
+                        status: township.status
+
+                    },
+
+                    geometry: {
+
+                        type: "Point",
+
+                        coordinates: [
+
+                            township.longitude,
+
+                            township.latitude
+
+                        ]
+
+                    }
+
+                })
+            );
+
+
+        source.setData({
+
+            type: "FeatureCollection",
+
+            features: townshipFeatures
+
+        });
+
+
+        console.log(
+            "GridWatch status updated."
+        );
+
+    }
+);
