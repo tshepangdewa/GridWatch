@@ -1,10 +1,6 @@
 import { supabase } from "./supabase.js";
-import { townships } from "./data/townships.js";
 
-
-// --------------------------------
-// AUTHENTICATION CHECK
-// --------------------------------
+let currentTownships = [];
 
 const {
     data: { session }
@@ -15,32 +11,38 @@ if (!session) {
     throw new Error("Admin authentication required.");
 }
 
+async function loadTownships() {
 
-// --------------------------------
-// ADMIN DATA
-// --------------------------------
+    const {
+        data,
+        error
+    } = await supabase
+        .from("townships")
+        .select("*")
+        .order("id");
 
-const STORAGE_KEY = "gridwatch-townships";
+    if (error) {
 
-let currentTownships =
-    JSON.parse(localStorage.getItem(STORAGE_KEY)) ||
-    townships.map((township) => ({
-        ...township
-    }));
+        console.error(
+            "Failed to load townships:",
+            error
+        );
 
+        return;
+    }
 
-function saveTownships() {
+    currentTownships = data;
 
-    localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(currentTownships)
+    console.log(
+        `${currentTownships.length} townships loaded from Supabase.`
     );
-}
 
+    renderTownships();
+}
 
 function formatDate(date) {
 
-    return date.toLocaleString(
+    return new Date(date).toLocaleString(
         "en-ZW",
         {
             day: "2-digit",
@@ -52,11 +54,6 @@ function formatDate(date) {
     );
 }
 
-
-// --------------------------------
-// RENDER TOWNSHIPS
-// --------------------------------
-
 function renderTownships() {
 
     const container =
@@ -65,12 +62,19 @@ function renderTownships() {
     container.innerHTML = "";
 
     currentTownships.forEach(
-        (township, index) => {
+        (township) => {
 
             const card =
                 document.createElement("div");
 
             card.className = "admin-card";
+
+            const lastUpdated =
+                township.last_updated
+                    ? formatDate(
+                        township.last_updated
+                    )
+                    : "Initial status";
 
             card.innerHTML = `
                 <div class="admin-card-header">
@@ -98,7 +102,7 @@ function renderTownships() {
 
                         <select
                             class="status-select"
-                            data-index="${index}"
+                            data-id="${township.id}"
                         >
 
                             <option
@@ -133,7 +137,7 @@ function renderTownships() {
                         <input
                             type="text"
                             class="reason-input"
-                            data-index="${index}"
+                            data-id="${township.id}"
                             value="${township.reason || ""}"
                             placeholder="Reason if power is OFF"
                         >
@@ -142,7 +146,7 @@ function renderTownships() {
 
                     <button
                         class="save-button"
-                        data-index="${index}"
+                        data-id="${township.id}"
                     >
                         SAVE STATUS
                     </button>
@@ -154,7 +158,7 @@ function renderTownships() {
                     LAST UPDATED
 
                     <span>
-                        ${township.lastUpdated || "Initial status"}
+                        ${lastUpdated}
                     </span>
 
                 </div>
@@ -167,11 +171,6 @@ function renderTownships() {
     addEventListeners();
 }
 
-
-// --------------------------------
-// SAVE BUTTONS
-// --------------------------------
-
 function addEventListeners() {
 
     document
@@ -180,21 +179,22 @@ function addEventListeners() {
 
             button.addEventListener(
                 "click",
-                () => {
+                async () => {
 
-                    const index =
-                        Number(button.dataset.index);
+                    const id =
+                        Number(
+                            button.dataset.id
+                        );
 
                     const status =
                         document.querySelector(
-                            `.status-select[data-index="${index}"]`
+                            `.status-select[data-id="${id}"]`
                         ).value;
 
                     const reason =
                         document.querySelector(
-                            `.reason-input[data-index="${index}"]`
+                            `.reason-input[data-id="${id}"]`
                         ).value.trim();
-
 
                     if (
                         status === "OFF" &&
@@ -208,46 +208,69 @@ function addEventListeners() {
                         return;
                     }
 
+                    button.disabled = true;
 
-                    currentTownships[index].status =
-                        status;
+                    button.textContent =
+                        "SAVING...";
 
+                    const {
+                        error
+                    } = await supabase
+                        .from("townships")
+                        .update({
+                            status:
+                                status,
 
-                    currentTownships[index].reason =
-                        status === "OFF"
-                            ? reason
-                            : "";
+                            reason:
+                                status === "OFF"
+                                    ? reason
+                                    : null,
 
+                            last_updated:
+                                new Date().toISOString()
+                        })
+                        .eq("id", id);
 
-                    currentTownships[index].lastUpdated =
-                        formatDate(new Date());
+                    if (error) {
 
+                        console.error(
+                            "Failed to update township:",
+                            error
+                        );
 
-                    saveTownships();
+                        alert(
+                            "Unable to save status."
+                        );
 
-                    renderTownships();
+                        button.disabled = false;
+
+                        button.textContent =
+                            "SAVE STATUS";
+
+                        return;
+                    }
+
+                    console.log(
+                        "Township status updated."
+                    );
+
+                    await loadTownships();
                 }
             );
         });
 }
 
-
-// --------------------------------
-// INITIAL RENDER
-// --------------------------------
-
-renderTownships();
-
-
-// --------------------------------
-// SIGN OUT
-// --------------------------------
-
 document
     .getElementById("logout-button")
-    .addEventListener("click", async () => {
+    .addEventListener(
+        "click",
+        async () => {
 
-        await supabase.auth.signOut();
+            await supabase.auth.signOut();
 
-        window.location.href = "login.html";
-    });
+            window.location.href =
+                "login.html";
+        }
+    );
+
+loadTownships();
