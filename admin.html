@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>GridWatch — Admin</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body class="admin-page">
+
+    <header class="admin-header">
+
+    <div>
+
+        <div class="admin-brand">
+            GRIDWATCH
+        </div>
+
+        <div class="admin-location">
+            ADMIN CONTROL
+        </div>
+
+    </div>
+
+
+    <div class="admin-actions">
+
+        <a
+            href="index.html"
+            class="back-button"
+        >
+            MAP
+        </a>
+
+        <button
+            id="logout-button"
+            class="logout-button"
+        >
+            SIGN OUT
+        </button>
+
+    </div>
+
+</header>
+
+
+    <main class="admin-container">
+
+        <section class="admin-title">
+
+            <div>
+                <h1>Power Status</h1>
+
+                <p>
+                    Manage electricity status for monitored townships.
+                </p>
+            </div>
+
+        </section>
+
+
+        <section class="township-list">
+
+            <div
+                id="township-list"
+                class="township-grid"
+            ></div>
+
+        </section>
+
+    </main>
+
+
+    <script type="module" src="admin.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>GridWatch — Admin Login</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body class="login-page">
+
+    <main class="login-container">
+
+        <div class="login-brand">
+            GRIDWATCH
+        </div>
+
+        <div class="login-location">
+            ADMIN ACCESS
+        </div>
+
+
+        <form id="login-form" class="login-form">
+
+            <label>
+                EMAIL
+
+                <input
+                    id="email"
+                    type="email"
+                    autocomplete="email"
+                    required
+                >
+            </label>
+
+
+            <label>
+                PASSWORD
+
+                <input
+                    id="password"
+                    type="password"
+                    autocomplete="current-password"
+                    required
+                >
+            </label>
+
+
+            <button type="submit">
+                SIGN IN
+            </button>
+
+
+            <div
+                id="login-error"
+                class="login-error"
+            ></div>
+
+        </form>
+
+    </main>
+
+
+    <script type="module" src="login.js"></script>
+
+</body>
+
+</html>
