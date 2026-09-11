@@ -1,53 +1,13 @@
 import * as maplibregl from "https://unpkg.com/maplibre-gl@^6.8.0/dist/maplibre-gl.mjs";
 
-import { townships } from "./data/townships.js";
+import { supabase } from "./supabase.js";
 
 const BULAWAYO_CENTER = [28.58, -20.15];
 
 const BULAWAYO_BOUNDARY_URL =
     "https://services.arcgis.com/7vyJMxlH6ODgjFtB/ArcGIS/rest/services/MapStudyArea2/FeatureServer/5/query?where=1%3D1&outFields=*&f=geojson";
 
-const STORAGE_KEY = "gridwatch-townships";
-
-
-// --------------------------------
-// LOAD SAVED TOWNSHIP DATA
-// --------------------------------
-
-function loadTownships() {
-
-    const savedTownships =
-        JSON.parse(
-            localStorage.getItem(STORAGE_KEY)
-        );
-
-    if (!savedTownships) {
-        return townships.map((township) => ({
-            ...township
-        }));
-    }
-
-    return townships.map((township) => {
-
-        const saved =
-            savedTownships.find(
-                (item) => item.name === township.name
-            );
-
-        return saved
-            ? {
-                ...township,
-                ...saved
-            }
-            : {
-                ...township
-            };
-    });
-}
-
-
-let currentTownships = loadTownships();
-
+let currentTownships = [];
 
 const map = new maplibregl.Map({
     container: "map",
@@ -70,7 +30,34 @@ map.addControl(
 );
 
 
-map.on("load", () => {
+map.on("load", async () => {
+
+    const {
+    data: townships,
+    error
+} = await supabase
+    .from("townships")
+    .select("*")
+    .order("id");
+
+
+if (error) {
+
+    console.error(
+        "Failed to load townships:",
+        error
+    );
+
+    return;
+}
+
+
+currentTownships = townships;
+
+
+console.log(
+    `${currentTownships.length} townships loaded from Supabase.`
+);
 
     // --------------------------------
     // TOWNSHIP INTERACTION
@@ -432,77 +419,3 @@ map.on("load", () => {
 });
 
 
-// --------------------------------
-// LIVE STATUS SYNC
-// --------------------------------
-
-window.addEventListener(
-    "storage",
-    (event) => {
-
-        if (
-            event.key !== STORAGE_KEY
-        ) {
-            return;
-        }
-
-        currentTownships =
-            loadTownships();
-
-
-        const source =
-            map.getSource("townships");
-
-
-        if (!source) {
-            return;
-        }
-
-
-        const townshipFeatures =
-            currentTownships.map(
-                (township) => ({
-
-                    type: "Feature",
-
-                    properties: {
-
-                        name: township.name,
-
-                        status: township.status
-
-                    },
-
-                    geometry: {
-
-                        type: "Point",
-
-                        coordinates: [
-
-                            township.longitude,
-
-                            township.latitude
-
-                        ]
-
-                    }
-
-                })
-            );
-
-
-        source.setData({
-
-            type: "FeatureCollection",
-
-            features: townshipFeatures
-
-        });
-
-
-        console.log(
-            "GridWatch status updated."
-        );
-
-    }
-);
