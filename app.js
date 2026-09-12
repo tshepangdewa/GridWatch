@@ -63,7 +63,34 @@ console.log(
     // TOWNSHIP INTERACTION
     // --------------------------------
 
-    map.on("click", "township-nodes", (event) => {
+    async function loadTownshipHistory(townshipId) {
+
+    const {
+        data,
+        error
+    } = await supabase
+        .from("township_status_history")
+        .select("*")
+        .eq("township_id", townshipId)
+        .order("changed_at", {
+            ascending: false
+        })
+        .limit(10);
+
+    if (error) {
+
+        console.error(
+            "Failed to load township history:",
+            error
+        );
+
+        return [];
+    }
+
+    return data;
+}
+
+    map.on("click", "township-nodes", async (event) => {
 
         const feature = event.features[0];
 
@@ -87,6 +114,61 @@ console.log(
             currentTownships.find(
                 (item) => item.name === name
             );
+
+            const history =
+    await loadTownshipHistory(
+        township.id
+    );
+
+    const historySection =
+    history.length > 0
+        ? `
+            <div class="popup-history">
+
+                <div class="popup-history-label">
+                    STATUS HISTORY
+                </div>
+
+                ${history.map(
+                    (item) => `
+                        <div class="popup-history-item">
+
+                            <div class="popup-history-status">
+                                ${item.status}
+                            </div>
+
+                            <div class="popup-history-date">
+                                ${new Date(
+                                    item.changed_at
+                                ).toLocaleString(
+                                    "en-ZW",
+                                    {
+                                        day: "2-digit",
+                                        month: "short",
+                                        year: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit"
+                                    }
+                                )}
+                            </div>
+
+                            ${
+                                item.reason
+                                    ? `
+                                        <div class="popup-history-reason">
+                                            ${item.reason}
+                                        </div>
+                                    `
+                                    : ""
+                            }
+
+                        </div>
+                    `
+                ).join("")}
+
+            </div>
+        `
+        : "";   
 
         const lastUpdated =
             township?.lastUpdated ||
@@ -141,6 +223,7 @@ console.log(
                     </strong>
 
                 </div>
+                ${historySection}
 
             </div>
         `;

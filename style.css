@@ -630,7 +630,48 @@ body {
     letter-spacing: 0.12em;
 }
 
-
 .logout-button:hover {
     background: #212121;
+}
+
+.popup-history {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid #222222;
+}
+
+.popup-history-label {
+    color: #777777;
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
+}
+
+.popup-history-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #161616;
+}
+
+.popup-history-item:last-child {
+    border-bottom: none;
+}
+
+.popup-history-status {
+    color: #ffffff;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.popup-history-date {
+    margin-top: 3px;
+    color: #777777;
+    font-size: 8px;
+}
+
+.popup-history-reason {
+    margin-top: 3px;
+    color: #ffffff;
+    font-size: 8px;
+    line-height: 1.4;
 }
