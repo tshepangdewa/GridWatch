@@ -418,4 +418,22 @@ console.log(
 
 });
 
+supabase
+    .channel("townships-realtime")
+    .on(
+        "postgres_changes",
+        {
+            event: "*",
+            schema: "public",
+            table: "townships"
+        },
+        (payload) => {
+
+            console.log(
+                "Township realtime update:",
+                payload
+            );
+        }
+    )
+    .subscribe();
 
