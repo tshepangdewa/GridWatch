@@ -91,7 +91,7 @@ body {
 .maplibregl-popup-close-button {
     color: #ffffff;
 
-    font-size: 18px;
+    font-size: 22px;
 
     padding: 5px 8px;
 }
@@ -103,7 +103,7 @@ body {
 }
 
 .popup-township {
-    font-size: 14px;
+    font-size: 17.5px;
 
     font-weight: 600;
 
@@ -121,7 +121,7 @@ body {
 
     gap: 8px;
 
-    font-size: 12px;
+    font-size: 15px;
 
     font-weight: 600;
 
@@ -149,7 +149,7 @@ body {
 
     color: #777777;
 
-    font-size: 8px;
+    font-size: 10px;
 
     letter-spacing: 0.12em;
 }
@@ -161,7 +161,7 @@ body {
 
     color: #ffffff;
 
-    font-size: 10px;
+    font-size: 12.5px;
 
     letter-spacing: 0.04em;
 
@@ -179,7 +179,7 @@ body {
 .popup-reason-label {
     color: #777777;
 
-    font-size: 8px;
+    font-size: 10px;
 
     letter-spacing: 0.12em;
 }
@@ -189,7 +189,7 @@ body {
 
     color: #ffffff;
 
-    font-size: 10px;
+    font-size: 12.5px;
 
     line-height: 1.4;
 }
@@ -634,6 +634,11 @@ body {
     background: #212121;
 }
 
+
+/* --------------------------------
+   POPUP STATUS HISTORY
+-------------------------------- */
+
 .popup-history {
     margin-top: 14px;
     padding-top: 10px;
@@ -642,7 +647,7 @@ body {
 
 .popup-history-label {
     color: #777777;
-    font-size: 8px;
+    font-size: 10px;
     letter-spacing: 0.12em;
     margin-bottom: 10px;
 }
@@ -658,7 +663,7 @@ body {
 
 .popup-history-status {
     color: #ffffff;
-    font-size: 9px;
+    font-size: 11.25px;
     font-weight: 700;
     letter-spacing: 0.08em;
 }
@@ -666,12 +671,27 @@ body {
 .popup-history-date {
     margin-top: 3px;
     color: #777777;
-    font-size: 8px;
+    font-size: 10px;
 }
 
 .popup-history-reason {
     margin-top: 3px;
     color: #ffffff;
-    font-size: 8px;
+    font-size: 10px;
     line-height: 1.4;
+}
+
+.popup-history-duration {
+    margin-top: 5px;
+    color: #555555;
+    font-size: 8.75px;
+    letter-spacing: 0.1em;
+}
+
+.popup-history-duration strong {
+    margin-left: 4px;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.03em;
 }

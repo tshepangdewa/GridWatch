@@ -9,6 +9,8 @@ const BULAWAYO_BOUNDARY_URL =
 
 let currentTownships = [];
 
+let activeTownshipId = null;
+
 const map = new maplibregl.Map({
     container: "map",
 
@@ -63,6 +65,56 @@ console.log(
     // TOWNSHIP INTERACTION
     // --------------------------------
 
+    function formatDuration(start, end) {
+
+    const startTime =
+        new Date(start).getTime();
+
+    const endTime =
+        new Date(end).getTime();
+
+    const difference =
+        endTime - startTime;
+
+    if (difference <= 0) {
+        return "0m";
+    }
+
+    const totalMinutes =
+        Math.floor(
+            difference / (1000 * 60)
+        );
+
+    const days =
+        Math.floor(
+            totalMinutes / 1440
+        );
+
+    const hours =
+        Math.floor(
+            (totalMinutes % 1440) / 60
+        );
+
+    const minutes =
+        totalMinutes % 60;
+
+    const parts = [];
+
+    if (days > 0) {
+        parts.push(`${days}d`);
+    }
+
+    if (hours > 0) {
+        parts.push(`${hours}h`);
+    }
+
+    if (minutes > 0) {
+        parts.push(`${minutes}m`);
+    }
+
+    return parts.join(" ") || "0m";
+}
+
     async function loadTownshipHistory(townshipId) {
 
     const {
@@ -90,6 +142,168 @@ console.log(
     return data;
 }
 
+function buildTownshipPopup(township, history) {
+
+    const statusText =
+        township.status === "ON"
+            ? "POWER ON"
+            : "POWER OFF";
+
+    const statusColor =
+        township.status === "ON"
+            ? "#FFFFFF"
+            : "#212121";
+
+    const lastUpdated =
+        township.last_updated
+            ? new Date(
+                township.last_updated
+            ).toLocaleString(
+                "en-ZW",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            )
+            : "Initial status";
+
+    const reasonSection =
+        township.status === "OFF"
+            ? `
+                <div class="popup-reason">
+
+                    <div class="popup-reason-label">
+                        REASON
+                    </div>
+
+                    <div class="popup-reason-text">
+                        ${township.reason || "Reason not provided"}
+                    </div>
+
+                </div>
+            `
+            : "";
+
+    const historySection =
+        history.length > 0
+            ? `
+                <div class="popup-history">
+
+                    <div class="popup-history-label">
+                        STATUS HISTORY
+                    </div>
+
+                    ${history.map(
+                        (item, index) => {
+
+                            const nextItem =
+                                history[index + 1];
+
+                            const duration =
+                                item.status === "OFF" &&
+                                nextItem &&
+                                nextItem.status === "ON"
+                                    ? formatDuration(
+                                        item.changed_at,
+                                        nextItem.changed_at
+                                    )
+                                    : null;
+
+                            return `
+                                <div class="popup-history-item">
+
+                                    <div class="popup-history-status">
+                                        ${item.status}
+                                    </div>
+
+                                    <div class="popup-history-date">
+                                        ${new Date(
+                                            item.changed_at
+                                        ).toLocaleString(
+                                            "en-ZW",
+                                            {
+                                                day: "2-digit",
+                                                month: "short",
+                                                year: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit"
+                                            }
+                                        )}
+                                    </div>
+
+                                    ${
+                                        item.reason
+                                            ? `
+                                                <div class="popup-history-reason">
+                                                    ${item.reason}
+                                                </div>
+                                            `
+                                            : ""
+                                    }
+
+                                    ${
+                                        duration
+                                            ? `
+                                                <div class="popup-history-duration">
+                                                    DURATION
+                                                    <strong>
+                                                        ${duration}
+                                                    </strong>
+                                                </div>
+                                            `
+                                            : ""
+                                    }
+
+                                </div>
+                            `;
+                        }
+                    ).join("")}
+
+                </div>
+            `
+            : "";
+
+    return `
+        <div class="gridwatch-popup">
+
+            <div class="popup-township">
+                ${township.name}
+            </div>
+
+            <div class="popup-status">
+
+                <span
+                    class="popup-status-dot"
+                    style="background: ${statusColor};"
+                ></span>
+
+                <span>
+                    ${statusText}
+                </span>
+
+            </div>
+
+            ${reasonSection}
+
+            <div class="popup-updated">
+
+                LAST UPDATED
+
+                <strong>
+                    ${lastUpdated}
+                </strong>
+
+            </div>
+
+            ${historySection}
+
+        </div>
+    `;
+}
+
     map.on("click", "township-nodes", async (event) => {
 
         const feature = event.features[0];
@@ -100,142 +314,36 @@ console.log(
         const status =
             feature.properties.status;
 
-        const statusText =
-            status === "ON"
-                ? "POWER ON"
-                : "POWER OFF";
+        
 
-        const statusColor =
-            status === "ON"
-                ? "#FFFFFF"
-                : "#212121";
+      const popup =
+    new maplibregl.Popup({
+        closeButton: true,
+        closeOnClick: true,
+        maxWidth: "280px"
+    })
+        .setLngLat(event.lngLat)
+        .setHTML(
+            buildTownshipPopup(
+                township,
+                history
+            )
+        )
+        .addTo(map);
 
-        const township =
-            currentTownships.find(
-                (item) => item.name === name
-            );
+activePopup = popup;
 
-            const history =
-    await loadTownshipHistory(
-        township.id
-    );
+popup.on("close", () => {
 
-    const historySection =
-    history.length > 0
-        ? `
-            <div class="popup-history">
+    if (activePopup === popup) {
 
-                <div class="popup-history-label">
-                    STATUS HISTORY
-                </div>
+        activePopup = null;
 
-                ${history.map(
-                    (item) => `
-                        <div class="popup-history-item">
+        activeTownshipId = null;
 
-                            <div class="popup-history-status">
-                                ${item.status}
-                            </div>
+    }
 
-                            <div class="popup-history-date">
-                                ${new Date(
-                                    item.changed_at
-                                ).toLocaleString(
-                                    "en-ZW",
-                                    {
-                                        day: "2-digit",
-                                        month: "short",
-                                        year: "numeric",
-                                        hour: "2-digit",
-                                        minute: "2-digit"
-                                    }
-                                )}
-                            </div>
-
-                            ${
-                                item.reason
-                                    ? `
-                                        <div class="popup-history-reason">
-                                            ${item.reason}
-                                        </div>
-                                    `
-                                    : ""
-                            }
-
-                        </div>
-                    `
-                ).join("")}
-
-            </div>
-        `
-        : "";   
-
-        const lastUpdated =
-            township?.lastUpdated ||
-            "Initial status";
-
-        const reasonSection =
-            status === "OFF"
-                ? `
-                    <div class="popup-reason">
-
-                        <div class="popup-reason-label">
-                            REASON
-                        </div>
-
-                        <div class="popup-reason-text">
-                            ${township?.reason || "Reason not provided"}
-                        </div>
-
-                    </div>
-                `
-                : "";
-
-        const popupContent = `
-
-            <div class="gridwatch-popup">
-
-                <div class="popup-township">
-                    ${name}
-                </div>
-
-                <div class="popup-status">
-
-                    <span
-                        class="popup-status-dot"
-                        style="background: ${statusColor};"
-                    ></span>
-
-                    <span>
-                        ${statusText}
-                    </span>
-
-                </div>
-
-                ${reasonSection}
-
-                <div class="popup-updated">
-
-                    LAST UPDATED
-
-                    <strong>
-                        ${lastUpdated}
-                    </strong>
-
-                </div>
-                ${historySection}
-
-            </div>
-        `;
-
-        new maplibregl.Popup({
-            closeButton: true,
-            closeOnClick: true,
-            maxWidth: "280px"
-        })
-            .setLngLat(event.lngLat)
-            .setHTML(popupContent)
-            .addTo(map);
+});
     });
 
 
