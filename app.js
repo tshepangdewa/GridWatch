@@ -501,5 +501,95 @@ supabase
             );
         }
     )
-    .subscribe();
+supabase
+    .channel("townships-realtime")
+    .on(
+        "postgres_changes",
+        {
+            event: "UPDATE",
+            schema: "public",
+            table: "townships"
+        },
+        (payload) => {
+
+            console.log(
+                "Township realtime update:",
+                payload
+            );
+
+            const updatedTownship =
+                payload.new;
+
+            const index =
+                currentTownships.findIndex(
+                    (township) =>
+                        township.id ===
+                        updatedTownship.id
+                );
+
+            if (index === -1) {
+                console.warn(
+                    "Township not found:",
+                    updatedTownship.id
+                );
+
+                return;
+            }
+
+            currentTownships[index] =
+                updatedTownship;
+
+            const source =
+                map.getSource("townships");
+
+            if (!source) {
+                console.warn(
+                    "Township map source not found."
+                );
+
+                return;
+            }
+
+            const features =
+                currentTownships.map(
+                    (township) => ({
+                        type: "Feature",
+
+                        properties: {
+                            name:
+                                township.name,
+
+                            status:
+                                township.status
+                        },
+
+                        geometry: {
+                            type: "Point",
+
+                            coordinates: [
+                                township.longitude,
+                                township.latitude
+                            ]
+                        }
+                    })
+                );
+
+            source.setData({
+                type: "FeatureCollection",
+                features: features
+            });
+
+            console.log(
+                `${updatedTownship.name} updated on map.`
+            );
+        }
+    )
+    .subscribe((status) => {
+
+        console.log(
+            "Realtime connection:",
+            status
+        );
+
+    });
 
