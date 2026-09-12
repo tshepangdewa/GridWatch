@@ -11,6 +11,8 @@ let currentTownships = [];
 
 let activeTownshipId = null;
 
+let activePopup = null;
+
 const map = new maplibregl.Map({
     container: "map",
 
@@ -30,6 +32,250 @@ map.addControl(
     new maplibregl.NavigationControl(),
     "top-right"
 );
+
+
+// --------------------------------
+// TOWNSHIP INTERACTION
+// --------------------------------
+
+function formatDuration(start, end) {
+
+const startTime =
+    new Date(start).getTime();
+
+const endTime =
+    new Date(end).getTime();
+
+const difference =
+    endTime - startTime;
+
+if (difference <= 0) {
+    return "0m";
+}
+
+const totalMinutes =
+    Math.floor(
+        difference / (1000 * 60)
+    );
+
+const days =
+    Math.floor(
+        totalMinutes / 1440
+    );
+
+const hours =
+    Math.floor(
+        (totalMinutes % 1440) / 60
+    );
+
+const minutes =
+    totalMinutes % 60;
+
+const parts = [];
+
+if (days > 0) {
+    parts.push(`${days}d`);
+}
+
+if (hours > 0) {
+    parts.push(`${hours}h`);
+}
+
+if (minutes > 0) {
+    parts.push(`${minutes}m`);
+}
+
+return parts.join(" ") || "0m";
+}
+
+async function loadTownshipHistory(townshipId) {
+
+const {
+    data,
+    error
+} = await supabase
+    .from("township_status_history")
+    .select("*")
+    .eq("township_id", townshipId)
+    .order("changed_at", {
+        ascending: false
+    })
+    .limit(10);
+
+if (error) {
+
+    console.error(
+        "Failed to load township history:",
+        error
+    );
+
+    return [];
+}
+
+return data;
+}
+
+function buildTownshipPopup(township, history) {
+
+const statusText =
+    township.status === "ON"
+        ? "POWER ON"
+        : "POWER OFF";
+
+const statusColor =
+    township.status === "ON"
+        ? "#FFFFFF"
+        : "#212121";
+
+const lastUpdated =
+    township.last_updated
+        ? new Date(
+            township.last_updated
+        ).toLocaleString(
+            "en-ZW",
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        )
+        : "Initial status";
+
+const reasonSection =
+    township.status === "OFF"
+        ? `
+            <div class="popup-reason">
+
+                <div class="popup-reason-label">
+                    REASON
+                </div>
+
+                <div class="popup-reason-text">
+                    ${township.reason || "Reason not provided"}
+                </div>
+
+            </div>
+        `
+        : "";
+
+const historySection =
+    history.length > 0
+        ? `
+            <div class="popup-history">
+
+                <div class="popup-history-label">
+                    STATUS HISTORY
+                </div>
+
+                ${history.map(
+                    (item, index) => {
+
+                        const nextItem =
+                            history[index + 1];
+
+                        const duration =
+                            item.status === "OFF" &&
+                            nextItem &&
+                            nextItem.status === "ON"
+                                ? formatDuration(
+                                    item.changed_at,
+                                    nextItem.changed_at
+                                )
+                                : null;
+
+                        return `
+                            <div class="popup-history-item">
+
+                                <div class="popup-history-status">
+                                    ${item.status}
+                                </div>
+
+                                <div class="popup-history-date">
+                                    ${new Date(
+                                        item.changed_at
+                                    ).toLocaleString(
+                                        "en-ZW",
+                                        {
+                                            day: "2-digit",
+                                            month: "short",
+                                            year: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit"
+                                        }
+                                    )}
+                                </div>
+
+                                ${
+                                    item.reason
+                                        ? `
+                                            <div class="popup-history-reason">
+                                                ${item.reason}
+                                            </div>
+                                        `
+                                        : ""
+                                }
+
+                                ${
+                                    duration
+                                        ? `
+                                            <div class="popup-history-duration">
+                                                DURATION
+                                                <strong>
+                                                    ${duration}
+                                                </strong>
+                                            </div>
+                                        `
+                                        : ""
+                                }
+
+                            </div>
+                        `;
+                    }
+                ).join("")}
+
+            </div>
+        `
+        : "";
+
+return `
+    <div class="gridwatch-popup">
+
+        <div class="popup-township">
+            ${township.name}
+        </div>
+
+        <div class="popup-status">
+
+            <span
+                class="popup-status-dot"
+                style="background: ${statusColor};"
+            ></span>
+
+            <span>
+                ${statusText}
+            </span>
+
+        </div>
+
+        ${reasonSection}
+
+        <div class="popup-updated">
+
+            LAST UPDATED
+
+            <strong>
+                ${lastUpdated}
+            </strong>
+
+        </div>
+
+        ${historySection}
+
+    </div>
+`;
+}
 
 
 map.on("load", async () => {
@@ -61,289 +307,66 @@ console.log(
     `${currentTownships.length} townships loaded from Supabase.`
 );
 
-    // --------------------------------
-    // TOWNSHIP INTERACTION
-    // --------------------------------
-
-    function formatDuration(start, end) {
-
-    const startTime =
-        new Date(start).getTime();
-
-    const endTime =
-        new Date(end).getTime();
-
-    const difference =
-        endTime - startTime;
-
-    if (difference <= 0) {
-        return "0m";
-    }
-
-    const totalMinutes =
-        Math.floor(
-            difference / (1000 * 60)
-        );
-
-    const days =
-        Math.floor(
-            totalMinutes / 1440
-        );
-
-    const hours =
-        Math.floor(
-            (totalMinutes % 1440) / 60
-        );
-
-    const minutes =
-        totalMinutes % 60;
-
-    const parts = [];
-
-    if (days > 0) {
-        parts.push(`${days}d`);
-    }
-
-    if (hours > 0) {
-        parts.push(`${hours}h`);
-    }
-
-    if (minutes > 0) {
-        parts.push(`${minutes}m`);
-    }
-
-    return parts.join(" ") || "0m";
-}
-
-    async function loadTownshipHistory(townshipId) {
-
-    const {
-        data,
-        error
-    } = await supabase
-        .from("township_status_history")
-        .select("*")
-        .eq("township_id", townshipId)
-        .order("changed_at", {
-            ascending: false
-        })
-        .limit(10);
-
-    if (error) {
-
-        console.error(
-            "Failed to load township history:",
-            error
-        );
-
-        return [];
-    }
-
-    return data;
-}
-
-function buildTownshipPopup(township, history) {
-
-    const statusText =
-        township.status === "ON"
-            ? "POWER ON"
-            : "POWER OFF";
-
-    const statusColor =
-        township.status === "ON"
-            ? "#FFFFFF"
-            : "#212121";
-
-    const lastUpdated =
-        township.last_updated
-            ? new Date(
-                township.last_updated
-            ).toLocaleString(
-                "en-ZW",
-                {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit"
-                }
-            )
-            : "Initial status";
-
-    const reasonSection =
-        township.status === "OFF"
-            ? `
-                <div class="popup-reason">
-
-                    <div class="popup-reason-label">
-                        REASON
-                    </div>
-
-                    <div class="popup-reason-text">
-                        ${township.reason || "Reason not provided"}
-                    </div>
-
-                </div>
-            `
-            : "";
-
-    const historySection =
-        history.length > 0
-            ? `
-                <div class="popup-history">
-
-                    <div class="popup-history-label">
-                        STATUS HISTORY
-                    </div>
-
-                    ${history.map(
-                        (item, index) => {
-
-                            const nextItem =
-                                history[index + 1];
-
-                            const duration =
-                                item.status === "OFF" &&
-                                nextItem &&
-                                nextItem.status === "ON"
-                                    ? formatDuration(
-                                        item.changed_at,
-                                        nextItem.changed_at
-                                    )
-                                    : null;
-
-                            return `
-                                <div class="popup-history-item">
-
-                                    <div class="popup-history-status">
-                                        ${item.status}
-                                    </div>
-
-                                    <div class="popup-history-date">
-                                        ${new Date(
-                                            item.changed_at
-                                        ).toLocaleString(
-                                            "en-ZW",
-                                            {
-                                                day: "2-digit",
-                                                month: "short",
-                                                year: "numeric",
-                                                hour: "2-digit",
-                                                minute: "2-digit"
-                                            }
-                                        )}
-                                    </div>
-
-                                    ${
-                                        item.reason
-                                            ? `
-                                                <div class="popup-history-reason">
-                                                    ${item.reason}
-                                                </div>
-                                            `
-                                            : ""
-                                    }
-
-                                    ${
-                                        duration
-                                            ? `
-                                                <div class="popup-history-duration">
-                                                    DURATION
-                                                    <strong>
-                                                        ${duration}
-                                                    </strong>
-                                                </div>
-                                            `
-                                            : ""
-                                    }
-
-                                </div>
-                            `;
-                        }
-                    ).join("")}
-
-                </div>
-            `
-            : "";
-
-    return `
-        <div class="gridwatch-popup">
-
-            <div class="popup-township">
-                ${township.name}
-            </div>
-
-            <div class="popup-status">
-
-                <span
-                    class="popup-status-dot"
-                    style="background: ${statusColor};"
-                ></span>
-
-                <span>
-                    ${statusText}
-                </span>
-
-            </div>
-
-            ${reasonSection}
-
-            <div class="popup-updated">
-
-                LAST UPDATED
-
-                <strong>
-                    ${lastUpdated}
-                </strong>
-
-            </div>
-
-            ${historySection}
-
-        </div>
-    `;
-}
-
     map.on("click", "township-nodes", async (event) => {
 
-        const feature = event.features[0];
+        const feature =
+            event.features[0];
 
         const name =
             feature.properties.name;
 
-        const status =
-            feature.properties.status;
+        const township =
+            currentTownships.find(
+                (item) =>
+                    item.name === name
+            );
 
-        
+        if (!township) {
+            console.warn(
+                "Township not found:",
+                name
+            );
 
-      const popup =
-    new maplibregl.Popup({
-        closeButton: true,
-        closeOnClick: true,
-        maxWidth: "280px"
-    })
-        .setLngLat(event.lngLat)
-        .setHTML(
-            buildTownshipPopup(
-                township,
-                history
-            )
-        )
-        .addTo(map);
+            return;
+        }
 
-activePopup = popup;
+        activeTownshipId =
+            township.id;
 
-popup.on("close", () => {
+        const history =
+            await loadTownshipHistory(
+                township.id
+            );
 
-    if (activePopup === popup) {
+        const popup =
+            new maplibregl.Popup({
+                closeButton: true,
+                closeOnClick: true,
+                maxWidth: "280px"
+            })
+                .setLngLat(event.lngLat)
+                .setHTML(
+                    buildTownshipPopup(
+                        township,
+                        history
+                    )
+                )
+                .addTo(map);
 
-        activePopup = null;
+        activePopup =
+            popup;
 
-        activeTownshipId = null;
+        popup.on("close", () => {
 
-    }
+            if (activePopup === popup) {
 
-});
+                activePopup = null;
+
+                activeTownshipId = null;
+
+            }
+
+        });
     });
 
 
@@ -618,7 +641,7 @@ supabase
             schema: "public",
             table: "townships"
         },
-        (payload) => {
+        async (payload) => {
 
             console.log(
                 "Township realtime update:",
@@ -673,7 +696,6 @@ supabase
 
                         geometry: {
                             type: "Point",
-
                             coordinates: [
                                 township.longitude,
                                 township.latitude
@@ -687,88 +709,33 @@ supabase
                 features: features
             });
 
-            console.log(
-                `${updatedTownship.name} updated on map.`
-            );
-        }
-    )
-supabase
-    .channel("townships-realtime")
-    .on(
-        "postgres_changes",
-        {
-            event: "UPDATE",
-            schema: "public",
-            table: "townships"
-        },
-        (payload) => {
+            if (
+                activeTownshipId ===
+                    updatedTownship.id &&
+                activePopup
+            ) {
 
-            console.log(
-                "Township realtime update:",
-                payload
-            );
-
-            const updatedTownship =
-                payload.new;
-
-            const index =
-                currentTownships.findIndex(
-                    (township) =>
-                        township.id ===
+                const history =
+                    await loadTownshipHistory(
                         updatedTownship.id
+                    );
+
+                if (
+                    activeTownshipId !==
+                        updatedTownship.id ||
+                    !activePopup
+                ) {
+                    return;
+                }
+
+                activePopup.setHTML(
+                    buildTownshipPopup(
+                        updatedTownship,
+                        history
+                    )
                 );
 
-            if (index === -1) {
-                console.warn(
-                    "Township not found:",
-                    updatedTownship.id
-                );
-
-                return;
             }
-
-            currentTownships[index] =
-                updatedTownship;
-
-            const source =
-                map.getSource("townships");
-
-            if (!source) {
-                console.warn(
-                    "Township map source not found."
-                );
-
-                return;
-            }
-
-            const features =
-                currentTownships.map(
-                    (township) => ({
-                        type: "Feature",
-
-                        properties: {
-                            name:
-                                township.name,
-
-                            status:
-                                township.status
-                        },
-
-                        geometry: {
-                            type: "Point",
-
-                            coordinates: [
-                                township.longitude,
-                                township.latitude
-                            ]
-                        }
-                    })
-                );
-
-            source.setData({
-                type: "FeatureCollection",
-                features: features
-            });
 
             console.log(
                 `${updatedTownship.name} updated on map.`
@@ -783,4 +750,3 @@ supabase
         );
 
     });
-
