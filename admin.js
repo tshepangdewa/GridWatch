@@ -1,5 +1,7 @@
 import { supabase } from "./supabase.js";
 
+const ADMIN_UID = "a9eb649a-85da-4e7b-8ac3-ddb1bba920ea";
+
 let currentTownships = [];
 
 const {
@@ -8,7 +10,16 @@ const {
 
 if (!session) {
     window.location.href = "login.html";
-    throw new Error("Admin authentication required.");
+    throw new Error("Authentication required.");
+}
+
+if (session.user.id !== ADMIN_UID) {
+
+    await supabase.auth.signOut();
+
+    window.location.href = "login.html";
+
+    throw new Error("Unauthorized admin account.");
 }
 
 async function loadTownships() {
