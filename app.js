@@ -422,59 +422,23 @@ console.log(
 
 
     // Black area inside boundary
-   // --------------------------------
-// TOWNSHIP NAMES
-// --------------------------------
+    map.addLayer({
 
-map.addLayer({
+        id: "bulawayo-boundary-fill",
 
-    id: "township-labels",
+        type: "fill",
 
-    type: "symbol",
+        source: "bulawayo-boundary",
 
-    source: "townships",
+        paint: {
 
-    layout: {
+            "fill-color": "#000000",
 
-        "text-field": [
-            "get",
-            "name"
-        ],
+            "fill-opacity": 1
 
-        "text-size": 10,
+        }
 
-        "text-offset": [
-            0,
-            1.4
-        ],
-
-        "text-anchor": "top",
-
-        "text-font": [
-            "Open Sans Regular"
-        ],
-
-        "text-allow-overlap": true,
-
-        "text-ignore-placement": true
-
-    },
-
-    paint: {
-
-        "text-color": "#FFFFFF",
-
-        "text-halo-color": "#000000",
-
-        "text-halo-width": 1.5,
-
-        "text-halo-blur": 0.2,
-
-        "text-opacity": 1
-
-    }
-
-});
+    });
 
 
     // Electric-white boundary
@@ -632,14 +596,22 @@ map.addLayer({
                 "name"
             ],
 
-            "text-size": 10,
+            "text-size": 9,
 
             "text-offset": [
                 0,
-                1.2
+                1.8
             ],
 
-            "text-anchor": "top"
+            "text-anchor": "top",
+
+            "text-font": [
+                "Open Sans Regular"
+            ],
+
+            "text-allow-overlap": true,
+
+            "text-ignore-placement": true
 
         },
 
@@ -650,6 +622,8 @@ map.addLayer({
             "text-halo-color": "#000000",
 
             "text-halo-width": 1.5,
+
+            "text-halo-blur": 0.2,
 
             "text-opacity": 1
 
