@@ -12,43 +12,86 @@ body {
 
 body {
     overflow: hidden;
-    background: #03060b;
+    background: #000000;
+    color: #ffffff;
     font-family: Arial, Helvetica, sans-serif;
 }
 
 #map {
+    position: fixed;
+    inset: 0;
     width: 100%;
     height: 100%;
+    background: #000000;
 }
 
-/* Map controls */
+/* --------------------------------
+   MAP CONTROLS
+-------------------------------- */
+
+/* --------------------------------
+   MAP CONTROLS
+-------------------------------- */
+
+.maplibregl-ctrl-top-right {
+    top: 24px;
+    right: 24px;
+}
 
 .maplibregl-ctrl-group {
-    background: rgba(5, 9, 16, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #050505;
+
+    border: 1px solid #333333;
+
+    border-radius: 3px;
+
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.5);
+
+    overflow: hidden;
 }
 
 .maplibregl-ctrl-group button {
-    background-color: transparent;
+    width: 32px;
+    height: 32px;
+
+    background-color: #050505;
+
+    border: none;
+
+    color: #ffffff;
 }
 
 .maplibregl-ctrl-group button:hover {
-    background-color: rgba(255, 255, 255, 0.06);
+    background-color: #212121;
 }
+
+.maplibregl-ctrl-group button + button {
+    border-top: 1px solid #222222;
+}
+
+.maplibregl-ctrl-icon {
+    filter: brightness(0) invert(1);
+}
+/* --------------------------------
+   GRIDWATCH BRAND
+-------------------------------- */
 
 .brand {
     position: fixed;
-    top: 24px;
-    left: 24px;
+    top: 26px;
+    left: 28px;
 
     z-index: 10;
 
-    color: white;
+    color: #ffffff;
 
     pointer-events: none;
 
+    user-select: none;
+
     text-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.8);
+        0 2px 10px rgba(0, 0, 0, 0.9);
 }
 
 .brand-name {
@@ -58,15 +101,23 @@ body {
 }
 
 .brand-location {
-    margin-top: 5px;
+    margin-top: 7px;
+
+    color: #ffffff;
 
     font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.18em;
 
-    opacity: 0.55;
+    font-weight: 600;
+
+    letter-spacing: 0.20em;
+
+    line-height: 1;
+
+    opacity: 0.9;
+
+    text-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.9);
 }
-
 /* --------------------------------
    GRIDWATCH TOWNSHIP POPUP
 -------------------------------- */
@@ -208,7 +259,6 @@ body {
     color: #ffffff;
 }
 
-
 .admin-header {
     display: flex;
 
@@ -221,7 +271,6 @@ body {
     border-bottom: 1px solid #212121;
 }
 
-
 .admin-brand {
     font-size: 18px;
 
@@ -229,7 +278,6 @@ body {
 
     letter-spacing: 0.22em;
 }
-
 
 .admin-location {
     margin-top: 5px;
@@ -240,7 +288,6 @@ body {
 
     letter-spacing: 0.18em;
 }
-
 
 .back-button {
     padding: 8px 14px;
@@ -256,11 +303,9 @@ body {
     letter-spacing: 0.12em;
 }
 
-
 .back-button:hover {
     background: #212121;
 }
-
 
 .admin-container {
     max-width: 1200px;
@@ -270,11 +315,9 @@ body {
     padding: 40px 24px;
 }
 
-
 .admin-title {
     margin-bottom: 30px;
 }
-
 
 .admin-title h1 {
     font-size: 24px;
@@ -284,7 +327,6 @@ body {
     letter-spacing: 0.04em;
 }
 
-
 .admin-title p {
     margin-top: 8px;
 
@@ -292,7 +334,6 @@ body {
 
     font-size: 12px;
 }
-
 
 .township-grid {
     display: grid;
@@ -303,7 +344,6 @@ body {
     gap: 12px;
 }
 
-
 .admin-card {
     border: 1px solid #212121;
 
@@ -311,7 +351,6 @@ body {
 
     padding: 18px;
 }
-
 
 .admin-card-header {
     display: flex;
@@ -323,7 +362,6 @@ body {
     margin-bottom: 20px;
 }
 
-
 .admin-township-name {
     font-size: 12px;
 
@@ -334,7 +372,6 @@ body {
     text-transform: uppercase;
 }
 
-
 .admin-status {
     font-size: 9px;
 
@@ -343,16 +380,13 @@ body {
     letter-spacing: 0.1em;
 }
 
-
 .status-on {
     color: #ffffff;
 }
 
-
 .status-off {
     color: #777777;
 }
-
 
 .admin-form {
     display: flex;
@@ -361,7 +395,6 @@ body {
 
     gap: 14px;
 }
-
 
 .admin-form label {
     display: flex;
@@ -376,7 +409,6 @@ body {
 
     letter-spacing: 0.12em;
 }
-
 
 .status-select,
 .reason-input {
@@ -397,17 +429,14 @@ body {
     font-size: 11px;
 }
 
-
 .status-select:focus,
 .reason-input:focus {
     border-color: #ffffff;
 }
 
-
 .reason-input::placeholder {
     color: #555555;
 }
-
 
 .save-button {
     padding: 10px;
@@ -429,11 +458,9 @@ body {
     letter-spacing: 0.1em;
 }
 
-
 .save-button:hover {
     background: #dddddd;
 }
-
 
 .admin-updated {
     margin-top: 18px;
@@ -448,7 +475,6 @@ body {
 
     letter-spacing: 0.12em;
 }
-
 
 .admin-updated span {
     display: block;
@@ -480,11 +506,9 @@ body {
     color: #ffffff;
 }
 
-
 .login-container {
     width: 320px;
 }
-
 
 .login-brand {
     font-size: 22px;
@@ -495,7 +519,6 @@ body {
 
     text-align: center;
 }
-
 
 .login-location {
     margin-top: 6px;
@@ -509,7 +532,6 @@ body {
     text-align: center;
 }
 
-
 .login-form {
     margin-top: 40px;
 
@@ -519,7 +541,6 @@ body {
 
     gap: 18px;
 }
-
 
 .login-form label {
     display: flex;
@@ -534,7 +555,6 @@ body {
 
     letter-spacing: 0.12em;
 }
-
 
 .login-form input {
     width: 100%;
@@ -554,11 +574,9 @@ body {
     font-size: 12px;
 }
 
-
 .login-form input:focus {
     border-color: #ffffff;
 }
-
 
 .login-form button {
     margin-top: 6px;
@@ -582,11 +600,9 @@ body {
     letter-spacing: 0.12em;
 }
 
-
 .login-form button:hover {
     background: #dddddd;
 }
-
 
 .login-error {
     min-height: 16px;
@@ -597,7 +613,6 @@ body {
 
     text-align: center;
 }
-
 
 /* --------------------------------
    ADMIN ACTIONS
@@ -610,7 +625,6 @@ body {
 
     gap: 8px;
 }
-
 
 .logout-button {
     padding: 8px 14px;
@@ -634,26 +648,31 @@ body {
     background: #212121;
 }
 
-
 /* --------------------------------
    POPUP STATUS HISTORY
 -------------------------------- */
 
 .popup-history {
     margin-top: 14px;
+
     padding-top: 10px;
+
     border-top: 1px solid #222222;
 }
 
 .popup-history-label {
     color: #777777;
+
     font-size: 10px;
+
     letter-spacing: 0.12em;
+
     margin-bottom: 10px;
 }
 
 .popup-history-item {
     padding: 8px 0;
+
     border-bottom: 1px solid #161616;
 }
 
@@ -663,35 +682,211 @@ body {
 
 .popup-history-status {
     color: #ffffff;
+
     font-size: 11.25px;
+
     font-weight: 700;
+
     letter-spacing: 0.08em;
 }
 
 .popup-history-date {
     margin-top: 3px;
+
     color: #777777;
+
     font-size: 10px;
 }
 
 .popup-history-reason {
     margin-top: 3px;
+
     color: #ffffff;
+
     font-size: 10px;
+
     line-height: 1.4;
 }
 
 .popup-history-duration {
     margin-top: 5px;
+
     color: #555555;
+
     font-size: 8.75px;
+
     letter-spacing: 0.1em;
 }
 
 .popup-history-duration strong {
     margin-left: 4px;
+
     color: #ffffff;
+
     font-size: 10px;
+
     font-weight: 400;
+
     letter-spacing: 0.03em;
+}
+
+/* --------------------------------
+   PUBLIC STATUS LEGEND
+-------------------------------- */
+
+.status-legend {
+    position: fixed;
+
+    left: 28px;
+    bottom: 28px;
+
+    z-index: 10;
+
+    min-width: 100px;
+
+    padding: 12px 14px;
+
+    background: rgba(5, 5, 5, 0.88);
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+
+    color: #ffffff;
+
+    font-size: 9px;
+
+    letter-spacing: 0.12em;
+
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.5);
+
+    user-select: none;
+}
+
+.legend-title {
+    margin-bottom: 9px;
+
+    color: #ffffff;
+
+    font-size: 8px;
+
+    font-weight: 700;
+
+    letter-spacing: normal;
+}
+
+.legend-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    height: 16px;
+}
+
+.legend-item + .legend-item {
+    margin-top: 5px;
+}
+
+.legend-dot {
+    width: 7px;
+    height: 7px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    display: inline-block;
+}
+
+.legend-on {
+    background: #ffffff;
+
+    border: 1px solid #ffffff;
+}
+
+.legend-off {
+    background: #212121;
+
+    border: 1px solid #212121;
+}
+
+/* --------------------------------
+   MOBILE RESPONSIVENESS
+-------------------------------- */
+
+@media (max-width: 600px) {
+
+    .brand {
+        top: 18px;
+        left: 18px;
+    }
+
+    .brand-name {
+        font-size: 16px;
+    }
+
+    .brand-location {
+        margin-top: 6px;
+        font-size: 9px;
+    }
+
+    .maplibregl-ctrl-top-right {
+        top: 18px;
+        right: 18px;
+    }
+
+    .maplibregl-ctrl-group button {
+        width: 30px;
+        height: 30px;
+    }
+
+    .status-legend {
+        left: 18px;
+        bottom: 18px;
+
+        min-width: 90px;
+
+        padding: 10px 12px;
+
+        font-size: 8px;
+    }
+
+    .legend-title {
+        margin-bottom: 8px;
+
+        font-size: 8px;
+    }
+
+    .legend-item {
+        height: 15px;
+    }
+
+    .legend-item + .legend-item {
+        margin-top: 4px;
+    }
+
+    .legend-dot {
+        width: 6px;
+        height: 6px;
+    }
+
+    .maplibregl-popup-content {
+        max-width: calc(100vw - 36px);
+    }
+
+    .gridwatch-popup {
+        min-width: 170px;
+        max-width: calc(100vw - 36px);
+        padding: 14px;
+    }
+
+    .popup-township {
+        font-size: 16px;
+    }
+
+    .popup-status {
+        font-size: 14px;
+    }
+
 }

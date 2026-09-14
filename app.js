@@ -422,23 +422,59 @@ console.log(
 
 
     // Black area inside boundary
-    map.addLayer({
+   // --------------------------------
+// TOWNSHIP NAMES
+// --------------------------------
 
-        id: "bulawayo-boundary-fill",
+map.addLayer({
 
-        type: "fill",
+    id: "township-labels",
 
-        source: "bulawayo-boundary",
+    type: "symbol",
 
-        paint: {
+    source: "townships",
 
-            "fill-color": "#000000",
+    layout: {
 
-            "fill-opacity": 1
+        "text-field": [
+            "get",
+            "name"
+        ],
 
-        }
+        "text-size": 10,
 
-    });
+        "text-offset": [
+            0,
+            1.4
+        ],
+
+        "text-anchor": "top",
+
+        "text-font": [
+            "Open Sans Regular"
+        ],
+
+        "text-allow-overlap": true,
+
+        "text-ignore-placement": true
+
+    },
+
+    paint: {
+
+        "text-color": "#FFFFFF",
+
+        "text-halo-color": "#000000",
+
+        "text-halo-width": 1.5,
+
+        "text-halo-blur": 0.2,
+
+        "text-opacity": 1
+
+    }
+
+});
 
 
     // Electric-white boundary
