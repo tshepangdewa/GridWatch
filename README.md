@@ -1,2 +1,2 @@
 # GridWatch
-Track which areas in Bulawayo have electricity &amp; plan your daily activities accordingly
+Track power outages across Bulawayo & plan your day accordingly
