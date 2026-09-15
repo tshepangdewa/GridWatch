@@ -27,6 +27,9 @@ const map = new maplibregl.Map({
     maxZoom: 16
 });
 
+// Keep the map hidden until GridWatch has finished initializing.
+document.getElementById("map").style.opacity = "0";
+
 
 map.addControl(
     new maplibregl.NavigationControl(),
@@ -294,9 +297,11 @@ if (error) {
     console.error(
         "Failed to load townships:",
         error
+    
     );
 
     return;
+    
 }
 
 
@@ -639,6 +644,9 @@ console.log(
     console.log(
         `${currentTownships.length} townships loaded.`
     );
+
+    // Reveal the finished GridWatch map.
+    document.getElementById("map").style.opacity = "1";
 
 });
 
