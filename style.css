@@ -817,6 +817,7 @@ body {
 
 @media (max-width: 600px) {
 
+    
     .brand {
         top: 18px;
         left: 18px;
@@ -889,5 +890,23 @@ body {
         font-size: 14px;
     }
 
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand-logo {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    filter: brightness(0) invert(1);
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
 }
 
