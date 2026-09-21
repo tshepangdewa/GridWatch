@@ -930,8 +930,8 @@ body {
     bottom: 38px;
     z-index: 20;
 
-    width: 30px;
-    height: 30px;
+    width: 42px;
+    height: 42px;
 
     display: flex;
     align-items: center;
@@ -941,8 +941,8 @@ body {
 }
 
 .township-notice-icon {
-    width: 22px;
-    height: 22px;
+    width: 34px;
+    height: 34px;
 
     display: block;
 
